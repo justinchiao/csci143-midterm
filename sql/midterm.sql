@@ -14,8 +14,12 @@
  * so there is no need to do a breakdown of revenue per year.
  */
 
-SELECT 'enter your solution here';
-
+select sum(amount) from 
+	payment join customer using(customer_id)
+	join address using(address_id)
+	join city using(city_id)
+	join country using (country_id)
+where country='North Korea';
 
 
 
@@ -32,7 +36,22 @@ SELECT 'enter your solution here';
  * Order the results so that actors generating the most revenue are at the top.
  */
 
-SELECT 'enter your solution here';
+select first_name, last_name, sum as revenue from (select f.actor_id,sum(revenue) from (select actor_id, film_id from 
+	film join film_actor using(film_id)
+	join actor using(actor_id)
+	join film_category using(film_id)
+	join category using(category_id)
+where name='Family')f left join 
+(select actor_id, film_id from 
+	film join film_actor using(film_id)
+	join actor using(actor_id)
+	join film_category using(film_id)
+	join category using(category_id)
+where name='Horror')h using(actor_id)
+join (select sum(amount)revenue, film_id from payment join rental using(rental_id) join inventory using(inventory_id) group by film_id)r on f.film_id=r.film_id
+where h.actor_id is null
+group by actor_id
+order by sum desc)t1 join actor using(actor_id);
 
 
 
@@ -47,10 +66,14 @@ SELECT 'enter your solution here';
  * but have never co-starred with RUSSEL BACALL in any movie.
  */
 
-SELECT 'enter your solution here';
-
-
-
+select actor_id, first_name, last_name from (select first_name, last_name, actor_id from
+film join film_actor using(film_id)
+join actor using(actor_id)
+where title='AGENT TRUMAN')n2 left join
+(select * from(select film_id from film_actor join actor using(actor_id)
+where first_name='RUSSELL' and last_name='BACALL')n1
+left join film_actor using(film_id))n3 using(actor_id)
+where film_id is null;
 
 
 
@@ -68,9 +91,11 @@ SELECT 'enter your solution here';
  * Your results should not contain any duplicate titles.
  */
 
-SELECT 'enter your solution here';
 
 
-
-
-
+select  title from 
+(select title, film_id from film where title not like'%F%')t1
+left join (select film_id, first_name from film_actor join film using (film_id) join actor using(actor_id) where first_name like '%F%' or last_name like '%F%')t2 using (film_id)
+left join (select film_id, last_name from film join inventory using(film_id) join rental using(inventory_id) join customer using(customer_id) where first_name like '%F%' or last_name like '%F%')t3 using (film_id)
+where first_name is null
+and last_name is null;
