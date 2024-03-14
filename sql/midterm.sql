@@ -35,26 +35,33 @@ where country='North Korea';
  * For each actor, you should also list the total amount that customers have paid to rent films that the actor has been in.
  * Order the results so that actors generating the most revenue are at the top.
  */
+select first_name, last_name, sum from 
 
-select first_name, last_name, sum as revenue from (select f.actor_id,sum(revenue) from (select actor_id, film_id from 
+(select actor.actor_id, actor.first_name, actor.last_name, sum(amount) from 
+	payment join rental using(rental_id)
+	join inventory using(inventory_id)
+	join film using (film_id)
+	join film_actor using(film_id)
+	join actor using(actor_id)
+group by actor.actor_id)t1
+left join
+(select actor_id from 
 	film join film_actor using(film_id)
 	join actor using(actor_id)
 	join film_category using(film_id)
 	join category using(category_id)
-where name='Family')f left join 
-(select actor_id, film_id from 
+where name='Family'
+except 
+select actor_id from 
 	film join film_actor using(film_id)
 	join actor using(actor_id)
 	join film_category using(film_id)
 	join category using(category_id)
-where name='Horror')h using(actor_id)
-join (select sum(amount)revenue, film_id from payment join rental using(rental_id) join inventory using(inventory_id) group by film_id)r on f.film_id=r.film_id
-where h.actor_id is null
-group by actor_id
-order by sum desc)t1 join actor using(actor_id);
-
-
-
+where name='Horror')t2
+using (actor_id)
+where t2.actor_id is not null
+order by sum desc
+;
 
 
 
